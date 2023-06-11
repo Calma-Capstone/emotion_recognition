@@ -16,7 +16,7 @@ class CalmaModel():
     def load_model(self, version="v2.2"):
         if version == "latest": 
             version = os.listdir(self.model_path)[-1]
-        if self.model_version == version:
+        if self.model_version != version:
             self.model = tf.keras.models.load_model(os.path.join(self.model_path, version))
         return self.model
         
@@ -75,7 +75,7 @@ class CalmaModel():
         return emotions[np.argmax(self.model.predict(np.expand_dims(audio_features,0)), axis=1)[0]]
     
     def predict(self, audio_path):
-        features =  self.__process_audio_features(audio_path)
+        features =  self.__process_audio_to_predict(audio_path)
         return self.__predict_audio(features)
     
     def predict_long_audio(self, audio_path):
@@ -85,3 +85,8 @@ class CalmaModel():
     def add_new_model(self, file, version):
         # TODO: add new model to our repo
         pass
+    
+if __name__ == "__main__":
+    calma_model = CalmaModel()
+    calma_model.load_model(version="latest")
+    print(calma_model.predict("audio_test copy.wav"))
