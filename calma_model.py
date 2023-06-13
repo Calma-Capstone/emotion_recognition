@@ -4,6 +4,8 @@ import tensorflow as tf
 import numpy as np
 import pathlib
 import librosa
+import pandas as pd
+import random
 
 class CalmaModel():
     
@@ -82,8 +84,24 @@ class CalmaModel():
         return self.__predict_audio(features)
     
     def predict_long_audio(self, audio_path):
-        # TODO: find best solution for long audio to predict the emotion
-        pass
+        emotion_predictions = []
+        offset = random.random()
+        LEN_PARTS_DATA = 55125
+        data, sr = librosa.load(audio_path, offset=offset, duration=2.5)
+        while data.shape[0] == LEN_PARTS_DATA:
+            features =  self.__extract_features(data, sr).real
+            emotion_predictions.append(self.__predict_audio(features))
+            offset += 2.5 + random.random()
+            data, sr = librosa.load(audio_path, offset=offset, duration=2.5)
+        
+        
+        rest_data, rest_sr = librosa.load(audio_path, offset=offset, duration=2.5)
+        if rest_data.shape[0] > 1000:
+            features =  self.__extract_features(data, sr).real
+            emotion_predictions.append(self.__predict_audio(features))
+        print(emotion_predictions)
+        return pd.Series(emotion_predictions).mode().values[0]
+        
     
     def add_new_model(self, file, version):
         # TODO: add new model to our repo
@@ -92,7 +110,7 @@ class CalmaModel():
 if __name__ == "__main__":
     calma_model = CalmaModel()
     calma_model.load_model(version="latest", h5_version=True)
-    print(calma_model.predict("audio_test copy.wav"))
+    print(calma_model.predict_long_audio("audio_test.wav"))
     # versions = ["v2", "v2.1", "v2.2"]
     # model_path = calma_model.model_path
     # if not os.path.exists(os.path.join(model_path, "h5_version")):
