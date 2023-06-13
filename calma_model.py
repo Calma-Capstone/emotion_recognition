@@ -13,11 +13,14 @@ class CalmaModel():
         self.model = None
         self.model_version = None
         
-    def load_model(self, version="v2.2"):
+    def load_model(self, version="v2.2", h5_version=False):
         if version == "latest": 
             version = os.listdir(self.model_path)[-1]
         if self.model_version != version:
-            self.model = tf.keras.models.load_model(os.path.join(self.model_path, version))
+            if h5_version:
+                self.model = tf.keras.models.load_model(os.path.join(self.model_path,"h5_version", f"{version.replace('.','_')}.h5"))
+            else:
+                self.model = tf.keras.models.load_model(os.path.join(self.model_path, version))
         return self.model
         
     def __extract_features(self, data, sample_rate):
@@ -88,5 +91,12 @@ class CalmaModel():
     
 if __name__ == "__main__":
     calma_model = CalmaModel()
-    calma_model.load_model(version="latest")
+    calma_model.load_model(version="latest", h5_version=True)
     print(calma_model.predict("audio_test copy.wav"))
+    # versions = ["v2", "v2.1", "v2.2"]
+    # model_path = calma_model.model_path
+    # if not os.path.exists(os.path.join(model_path, "h5_version")):
+    #     os.mkdir(os.path.join(model_path, "h5_version"))
+    # for version in versions:
+    #     model = calma_model.load_model(version)
+    #     model.save(os.path.join(model_path,"h5_version", f"{version.replace('.', '_')}.h5"))
